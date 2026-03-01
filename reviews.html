@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+<title>Отзывы | PemaCleaning</title>
+
+<!-- Preconnect для внешних ресурсов -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdnjs.cloudflare.com">
+<link rel="preconnect" href="https://unpkg.com">
+
+<!-- Шрифт Inter с display=swap -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<!-- AOS CSS - загружаем асинхронно -->
+<link rel="preload" href="https://unpkg.com/aos@2.3.1/dist/aos.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css"></noscript>
+
+<!-- Основные стили -->
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="reviews.css">
+
+<!-- Supabase SDK - defer для неблокирующей загрузки -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+</head>
+<body>
+<nav class="navbar">
+<div class="container nav-container">
+<div class="logo" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-weight: 300; color: #000000;">Pema<span style="font-weight: 300; color: #000000;">Cleaning</span></div>
+<div class="nav-links" id="navLinks">
+<a href="index.html#home">Главная</a>
+<a href="index.html#services">Услуги</a>
+<a href="works.html" class="active">Наши работы</a>
+<a href="reviews.html" class="active">Отзывы</a>
+<a href="index.html#calculator">Заказать уборку</a>
+<a href="index.html#contacts">Контакты</a>
+</div>
+<button class="mobile-menu-btn" id="mobileMenuBtn"><i class="fas fa-bars"></i></button>
+</div>
+</nav>
+<section class="reviews-hero">
+<div class="container">
+<h1 data-aos="fade-up">Отзывы наших клиентов</h1>
+
+<a href="index.html" class="btn-back" data-aos="fade-up" data-aos-delay="200"><i class="fas fa-arrow-left"></i> Вернуться на главную</a>
+</div>
+</section>
+<section class="reviews-page-content">
+<div class="container">
+<div class="review-form-container" data-aos="fade-up">
+<h3>Оставить отзыв</h3>
+<p class="form-subtitle">Поделитесь впечатлениями о нашей работе</p>
+
+<form id="reviewForm">
+<div class="form-row">
+<input type="text" id="reviewName" placeholder="Ваше имя" required>
+</div>
+
+<div class="form-row">
+    <label class="rating-label">Оценка</label>
+    <select id="reviewRating" class="rating-select" required>
+        <option value="5">5 ★ (Отлично)</option>
+        <option value="4">4 ★ (Хорошо)</option>
+        <option value="3">3 ★ (Нормально)</option>
+        <option value="2">2 ★ (Плохо)</option>
+        <option value="1">1 ★ (Ужасно)</option>
+    </select>
+</div>
+
+<div class="form-row">
+<textarea id="reviewText" placeholder="Расскажите о вашем опыте..." rows="4" required></textarea>
+</div>
+
+<!-- Фото ДО -->
+<div class="photo-upload-section">
+    <label class="photo-upload-label">
+        <div class="upload-header">
+            <i class="fas fa-home upload-icon"></i>
+            <span class="upload-title">Фото ДО уборки</span>
+        </div>
+        <div class="upload-area" id="uploadAreaBefore">
+            <div class="upload-placeholder">
+                <i class="fas fa-camera"></i>
+                <span>Нажмите или перетащите фото</span>
+            </div>
+            <img id="previewBefore" class="upload-preview" style="display: none;">
+        </div>
+        <input type="file" id="photoBefore" accept="image/*" onchange="handlePhotoUpload(this, 'before')" hidden>
+    </label>
+    <button type="button" class="remove-photo-btn" id="removeBefore" onclick="removePhoto('before')" style="display: none;">
+        <i class="fas fa-times"></i> Удалить
+    </button>
+</div>
+
+<!-- Фото ПОСЛЕ -->
+<div class="photo-upload-section">
+    <label class="photo-upload-label">
+        <div class="upload-header">
+            <i class="fas fa-home upload-icon"></i>
+            <span class="upload-title">Фото ПОСЛЕ уборки</span>
+        </div>
+        <div class="upload-area" id="uploadAreaAfter">
+            <div class="upload-placeholder">
+                <i class="fas fa-camera"></i>
+                <span>Нажмите или перетащите фото</span>
+            </div>
+            <img id="previewAfter" class="upload-preview" style="display: none;">
+        </div>
+        <input type="file" id="photoAfter" accept="image/*" onchange="handlePhotoUpload(this, 'after')" hidden>
+    </label>
+    <button type="button" class="remove-photo-btn" id="removeAfter" onclick="removePhoto('after')" style="display: none;">
+        <i class="fas fa-times"></i> Удалить
+    </button>
+</div>
+
+<button type="submit" class="btn-submit-review">
+<i class="fas fa-paper-plane"></i> Опубликовать отзыв
+</button>
+</form>
+</div>
+<div class="reviews-grid" id="reviewsContainer"></div>
+</div>
+</section>
+<footer id="contacts" class="footer">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-info">
+                <h3 class="footer-logo" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-weight: 300; color: #FFFFFF;">Pema<span style="font-weight: 300; color: #FFFFFF;">Cleaning</span></h3>
+                <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-weight: 400; color: #CCCCCC; font-size: 14px;">Премиальный клининг в Ростове-на-Дону</p>
+            </div>
+            <div class="footer-social">
+                <a href="#" class="footer-link" id="instagramFooter">
+                    <i class="fab fa-instagram"></i> Instagram
+                </a>
+                <a href="#" class="footer-link" id="whatsappFooter">
+                    <i class="fab fa-whatsapp"></i> WhatsApp
+                </a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2026 PemaCleaning — чистота с заботой о вас</p>
+        </div>
+    </div>
+</footer>
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js" defer></script>
+<script src="script.js" defer></script>
+<script src="reviews.js" defer></script>
+</body>
+</html>

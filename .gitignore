@@ -1,0 +1,10 @@
+# Секретные файлы
+.env
+.env.local
+config.js
+*.prod.js
+
+# Системные файлы
+node_modules/
+.DS_Store
+Thumbs.db
