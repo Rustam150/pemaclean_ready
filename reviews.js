@@ -10,7 +10,8 @@ const { Client, Databases, Storage, ID, Query } = Appwrite;
 
 const client = new Client()
     .setEndpoint(APPWRITE_ENDPOINT)
-    .setProject(APPWRITE_PROJECT_ID);
+    .setProject(APPWRITE_PROJECT_ID)
+    .setMode('admin');
 
 const databases = new Databases(client);
 const storage = new Storage(client);
