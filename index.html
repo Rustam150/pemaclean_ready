@@ -1,1 +1,186 @@
-<!DOCTYPE html><html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes"><title>PemaCleaning | Премиальный клининг в Ростове-на-Дону</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet"><link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"><link rel="stylesheet" href="style.css"></head><body><nav class="navbar"><div class="container nav-container"><div class="logo" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-weight: 300; color: #000000;">Pema<span style="font-weight: 300; color: #000000;">Cleaning</span></div><div class="nav-links" id="navLinks"><a href="#home">Главная</a><a href="#services">Услуги</a><a href="works.html">Наши работы</a><a href="reviews.html">Отзывы</a><a href="#calculator">Заказать уборку</a><a href="#contacts">Контакты</a></div><button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Меню"><i class="fas fa-bars"></i></button></div></nav><section id="home" class="hero"><div class="hero-background"><div class="shape shape-1"></div><div class="shape shape-2"></div><div class="shape shape-3"></div><div class="shape shape-4"></div></div><div class="container hero-container"><div class="hero-content"><h1 style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: 300; color: #000000; margin-bottom: 5px;">Pema<span style="font-weight: 300; color: #000000;">Cleaning</span></h1><p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: 400; color: #000000; font-size: 20px; margin-bottom: 15px;">Премиальный клининг домов, квартир и офисов</p><p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: 400; color: #333333; font-size: 16px; line-height: 1.5; margin-bottom: 25px;"> Команда профессионалов своего дела<br> Личный контроль - Пема Эльбердова<br> Ростов-на-Дону </p><div class="hero-actions"><a href="#" class="btn-instagram" id="instagramBtn"><i class="fab fa-instagram"></i> Instagram </a><a href="#" class="btn-whatsapp" id="whatsappBtn"><i class="fab fa-whatsapp"></i> WhatsApp </a></div></div></div></section><section id="services" class="services"><div class="container"><h2 class="section-title" data-aos="fade-up">Наши услуги и цены</h2><p class="section-sub" data-aos="fade-up">Забота о вашем доме — как о своём собственном</p><h3 class="category-title" data-aos="fade-right"><i class="fas fa-building"></i> Уборка квартир и помещений </h3><div class="price-grid" id="apartment-prices"></div><h3 class="category-title" data-aos="fade-right"><i class="fas fa-couch"></i> Химчистка мебели </h3><div class="price-grid" id="furniture-prices"></div><h3 class="category-title" data-aos="fade-right"><i class="fas fa-wind"></i> Мытьё окон </h3><div class="price-grid" id="windows-prices"></div><h3 class="category-title" data-aos="fade-right"><i class="fas fa-home"></i> Дополнительные услуги </h3><div class="price-grid" id="house-prices"></div></div></section><section id="reviews" class="reviews-section"><div class="container"><h2 class="section-title" data-aos="fade-up">Отзывы наших клиентов</h2><p class="section-sub" data-aos="fade-up">Посмотрите реальные результаты нашей работы</p><div style="text-align: center;" data-aos="fade-up"><a href="reviews.html" class="btn-instagram" style="margin: 0 auto; display:inline-flex;"><i class="fas fa-images"></i> Смотреть все отзывы с фото </a></div></div></section></div></section><section id="calculator" class="calculator-section"><div class="container"><h2 class="section-title" data-aos="fade-up">Калькулятор стоимости</h2><p class="section-sub" data-aos="fade-up">Выберите услугу и укажите объём — получите точную цену</p><div class="calculator-card" data-aos="flip-up"><div class="calculator-header"><h3>Рассчитайте стоимость уборки</h3><p>✓ Мгновенный расчёт ✓ Без скрытых платежей ✓ Онлайн заказ</p></div><div class="calculator-body"><div class="calculator-row"><div class="calculator-field"><label>Выберите услугу</label><select id="serviceSelect" class="calculator-select"></select></div><div class="calculator-field"><label>Количество / Площадь</label><input type="number" id="quantityInput" class="calculator-input" value="1" min="0.5" step="0.5"></div></div><div class="calculator-price-box"><span class="calculator-price-label">Примерная стоимость:</span><span class="calculator-price-value" id="calculatedPrice">0 ₽</span></div><button class="btn-whatsapp-green" id="orderFromCalculator"><i class="fab fa-whatsapp"></i> Заказать в WhatsApp </button><p class="calculator-hint">Нажмите кнопку — откроется WhatsApp с готовым сообщением</p></div></div></div></section><footer id="contacts" class="footer"><div class="container"><div class="footer-content"><div class="footer-info"><h3 class="footer-logo" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-weight: 300; color: #FFFFFF;">Pema<span style="font-weight: 300; color: #FFFFFF;">Cleaning</span></h3><p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-weight: 400; color: #CCCCCC; font-size: 14px;">Премиальный клининг в Ростове-на-Дону</p></div><div class="footer-social"><a href="#" class="footer-link" id="instagramFooter"><i class="fab fa-instagram"></i> Instagram </a><a href="#" class="footer-link" id="whatsappFooter"><i class="fab fa-whatsapp"></i> WhatsApp </a></div></div><div class="footer-bottom"><p>© 2026 PemaCleaning — чистота с заботой о вас</p></div></div></footer><script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script><script src="script.js"></script></body></html>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>PemaCleaning | Премиальный клининг в Ростове-на-Дону</title>
+    <!-- Шрифт Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <!-- AOS CSS -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Навигация -->
+    <nav class="navbar">
+        <div class="container nav-container">
+            <div class="logo" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-weight: 300; color: #000000;">Pema<span style="font-weight: 300; color: #000000;">Cleaning</span></div>
+            <div class="nav-links" id="navLinks">
+                <a href="#home">Главная</a>
+                <a href="#services">Услуги</a>
+                 <a href="works.html">Наши работы</a>
+                <a href="reviews.html">Отзывы</a>
+                <a href="#calculator">Заказать уборку</a>
+                <a href="#contacts">Контакты</a>
+            </div>
+            <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Меню">
+    <i class="fas fa-bars"></i>
+</button>
+        </div>
+    </nav>
+
+    <!-- Hero секция -->
+    <section id="home" class="hero">
+        <!-- 3D-шары (задний фон) -->
+        <div class="hero-background">
+            <div class="shape shape-1"></div>
+            <div class="shape shape-2"></div>
+            <div class="shape shape-3"></div>
+            <div class="shape shape-4"></div>
+        </div>
+        
+        <div class="container hero-container">
+            <div class="hero-content">
+                <h1 style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: 300; color: #000000; margin-bottom: 5px;">Pema<span style="font-weight: 300; color: #000000;">Cleaning</span></h1>
+                
+                <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: 400; color: #000000; font-size: 20px; margin-bottom: 15px;">Премиальный клининг домов, квартир и офисов</p>
+                
+                <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: 400; color: #333333; font-size: 16px; line-height: 1.5; margin-bottom: 25px;">
+                    Команда профессионалов своего дела<br>
+                    Личный контроль - Пема Эльбердова<br>
+                    Ростов-на-Дону
+                </p>
+                
+                <div class="hero-actions">
+                    <a href="#" class="btn-instagram" id="instagramBtn">
+                        <i class="fab fa-instagram"></i> Instagram
+                    </a>
+                    <a href="#" class="btn-whatsapp" id="whatsappBtn">
+                        <i class="fab fa-whatsapp"></i> WhatsApp
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Услуги и цены -->
+    <section id="services" class="services">
+        <div class="container">
+            <h2 class="section-title" data-aos="fade-up">Наши услуги и цены</h2>
+            <p class="section-sub" data-aos="fade-up">Забота о вашем доме — как о своём собственном</p>
+            
+            <!-- 1. Уборка квартир -->
+            <h3 class="category-title" data-aos="fade-right">
+                <i class="fas fa-building"></i> Уборка квартир и помещений
+            </h3>
+            <div class="price-grid" id="apartment-prices"></div>
+            
+            <!-- 2. Химчистка мебели -->
+            <h3 class="category-title" data-aos="fade-right">
+                <i class="fas fa-couch"></i> Химчистка мебели
+            </h3>
+            <div class="price-grid" id="furniture-prices"></div>
+            
+            <!-- 3. Мытьё окон -->
+            <h3 class="category-title" data-aos="fade-right">
+                <i class="fas fa-wind"></i> Мытьё окон
+            </h3>
+            <div class="price-grid" id="windows-prices"></div>
+            
+            <!-- 4. Дополнительные услуги -->
+            <h3 class="category-title" data-aos="fade-right">
+                <i class="fas fa-home"></i> Дополнительные услуги
+            </h3>
+            <div class="price-grid" id="house-prices"></div>
+        </div>
+    </section>
+
+   
+           <section id="reviews" class="reviews-section">
+<div class="container">
+<h2 class="section-title" data-aos="fade-up">Отзывы наших клиентов</h2>
+<p class="section-sub" data-aos="fade-up">Посмотрите реальные результаты нашей работы</p>
+<div style="text-align: center;" data-aos="fade-up">
+<a href="reviews.html" class="btn-instagram" style="margin: 0 auto; display:inline-flex;">
+<i class="fas fa-images"></i> Смотреть все отзывы с фото
+</a>
+</div>
+</div>
+</section>
+        </div>
+    </section>
+
+    <!-- Калькулятор -->
+    <section id="calculator" class="calculator-section">
+        <div class="container">
+            <h2 class="section-title" data-aos="fade-up">Калькулятор стоимости</h2>
+            <p class="section-sub" data-aos="fade-up">Выберите услугу и укажите объём — получите точную цену</p>
+            
+            <div class="calculator-card" data-aos="flip-up">
+                <div class="calculator-header">
+                    <h3>Рассчитайте стоимость уборки</h3>
+                    <p>✓ Мгновенный расчёт ✓ Без скрытых платежей ✓ Онлайн заказ</p>
+                </div>
+                
+                <div class="calculator-body">
+                    <div class="calculator-row">
+                        <div class="calculator-field">
+                            <label>Выберите услугу</label>
+                            <select id="serviceSelect" class="calculator-select">
+                                <!-- JS заполнит -->
+                            </select>
+                        </div>
+                        
+                        <div class="calculator-field">
+                            <label>Количество / Площадь</label>
+                            <input type="number" id="quantityInput" class="calculator-input" value="1" min="0.5" step="0.5">
+                        </div>
+                    </div>
+                    
+                    <div class="calculator-price-box">
+                        <span class="calculator-price-label">Примерная стоимость:</span>
+                        <span class="calculator-price-value" id="calculatedPrice">0 ₽</span>
+                    </div>
+                    
+                    <button class="btn-whatsapp-green" id="orderFromCalculator">
+                        <i class="fab fa-whatsapp"></i> Заказать в WhatsApp
+                    </button>
+                    <p class="calculator-hint">Нажмите кнопку — откроется WhatsApp с готовым сообщением</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Контакты -->
+  <footer id="contacts" class="footer">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-info">
+                <h3 class="footer-logo" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-weight: 300; color: #FFFFFF;">Pema<span style="font-weight: 300; color: #FFFFFF;">Cleaning</span></h3>
+                <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-weight: 400; color: #CCCCCC; font-size: 14px;">Премиальный клининг в Ростове-на-Дону</p>
+            </div>
+            <div class="footer-social">
+                <a href="#" class="footer-link" id="instagramFooter">
+                    <i class="fab fa-instagram"></i> Instagram
+                </a>
+                <a href="#" class="footer-link" id="whatsappFooter">
+                    <i class="fab fa-whatsapp"></i> WhatsApp
+                </a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2026 PemaCleaning — чистота с заботой о вас</p>
+        </div>
+    </div>
+</footer>
+
+    <!-- AOS -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <!-- Наш JS -->
+    <script src="script.js"></script>
+</body>
+</html>
