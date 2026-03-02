@@ -80,16 +80,16 @@ async function uploadPhoto(file) {
 // ===== ЗАГРУЗКА ОТЗЫВОВ ИЗ APPWRITE =====
 async function loadReviews() {
     try {
-        // Создаём URL с параметром mode=admin
         const url = new URL(`${APPWRITE_ENDPOINT}/databases/${APPWRITE_DATABASE_ID}/collections/${APPWRITE_COLLECTION_ID}/documents`);
         url.searchParams.set('mode', 'admin');
         
-        // Делаем запрос через fetch
         const response = await fetch(url, {
             method: 'GET',
             headers: {
                 'X-Appwrite-Project': APPWRITE_PROJECT_ID,
-                'Content-Type': 'application/json'
+                'X-Appwrite-Response-Format': '1.6.0',
+                'Content-Type': 'application/json',
+                'Origin': window.location.origin  // ← ДОБАВЛЯЕМ ЭТО
             }
         });
         
@@ -115,7 +115,9 @@ async function saveReview(name, rating, text, photoUrls = []) {
             method: 'POST',
             headers: {
                 'X-Appwrite-Project': APPWRITE_PROJECT_ID,
-                'Content-Type': 'application/json'
+                'X-Appwrite-Response-Format': '1.6.0',
+                'Content-Type': 'application/json',
+                'Origin': window.location.origin  // ← ДОБАВЛЯЕМ ЭТО
             },
             body: JSON.stringify({
                 documentId: 'unique()',
