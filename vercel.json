@@ -19,6 +19,12 @@
       "use": "@vercel/static"
     }
   ],
+  "rewrites": [
+    {
+      "source": "/supabase-api/:path*",
+      "destination": "https://gxdaszzavrbrlwoqzyoe.supabase.co/:path*"
+    }
+  ],
   "routes": [
     {
       "src": "/(.*)",

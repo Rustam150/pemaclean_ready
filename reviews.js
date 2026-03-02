@@ -4,7 +4,7 @@
     'use strict';
 
     // ===== КОНФИГУРАЦИЯ SUPABASE =====
-    const SUPABASE_URL = 'https://gxdaszzavrbrlwoqzyoe.supabase.co';
+    const SUPABASE_URL = '/supabase-api';
     const SUPABASE_ANON_KEY = 'sb_publishable_sdkcgSWRjvbO8zPB22h5mQ_h9xqGwry';
 
     // Инициализация клиента Supabase
