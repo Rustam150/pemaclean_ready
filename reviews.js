@@ -1,22 +1,18 @@
-// ===== ИНИЦИАЛИЗАЦИЯ APPWRITE =====
 const APPWRITE_ENDPOINT = 'https://fra.cloud.appwrite.io/v1';
 const APPWRITE_PROJECT_ID = 'pemaclean-reviews';
 const APPWRITE_DATABASE_ID = '69a608a7001e7c65d92a';
 const APPWRITE_COLLECTION_ID = 'reviews';
 const APPWRITE_BUCKET_ID = 'review-photos';
 
-// Инициализация Appwrite клиента
 const { Client, Databases, Storage, ID, Query } = Appwrite;
 
 const client = new Client()
     .setEndpoint(APPWRITE_ENDPOINT)
-    .setProject(APPWRITE_PROJECT_ID)
-   
+    .setProject(APPWRITE_PROJECT_ID);
 
 const databases = new Databases(client);
 const storage = new Storage(client);
 
-// ===== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ =====
 function compressImage(file, maxWidth = 800, quality = 0.7) {
     return new Promise((resolve) => {
         const reader = new FileReader();
@@ -49,99 +45,57 @@ function getInitials(name) {
 }
 
 function isAdmin() {
-    const hash = window.location.hash;
-    console.log('📍 Хеш URL:', hash);
-    return hash === '#admin';
+    return window.location.hash === '#admin';
 }
 
 let photoBefore = null;
 let photoAfter = null;
 
-// ===== ЗАГРУЗКА ФОТО В APPWRITE STORAGE =====
 async function uploadPhoto(file) {
     try {
         const compressedBlob = await compressImage(file, 1080, 0.8);
         const fileId = ID.unique();
-        const response = await storage.createFile(
-            APPWRITE_BUCKET_ID,
-            fileId,
-            compressedBlob
-        );
-        
-        // Получаем публичную ссылку на фото
-        const fileUrl = storage.getFileView(APPWRITE_BUCKET_ID, fileId);
-        return fileUrl.toString();
+        await storage.createFile(APPWRITE_BUCKET_ID, fileId, compressedBlob);
+        return storage.getFileView(APPWRITE_BUCKET_ID, fileId).toString();
     } catch (error) {
         console.error('Ошибка загрузки фото:', error);
         throw error;
     }
 }
 
-// ===== ЗАГРУЗКА ОТЗЫВОВ ИЗ APPWRITE =====
 async function loadReviews() {
     try {
-        const url = new URL(`${APPWRITE_ENDPOINT}/databases/${APPWRITE_DATABASE_ID}/collections/${APPWRITE_COLLECTION_ID}/documents`);
-        url.searchParams.set('mode', 'admin');
-        
-        const response = await fetch(url, {
-            method: 'GET',
-            headers: {
-                'X-Appwrite-Project': APPWRITE_PROJECT_ID,
-                'X-Appwrite-Response-Format': '1.6.0',
-                'Content-Type': 'application/json',
-                'Origin': window.location.origin  // ← ДОБАВЛЯЕМ ЭТО
-            }
-        });
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        return data.documents;
+        const response = await databases.listDocuments(
+            APPWRITE_DATABASE_ID,
+            APPWRITE_COLLECTION_ID,
+            [Query.orderDesc('$createdAt'), Query.limit(50)]
+        );
+        return response.documents;
     } catch (error) {
         console.error('Ошибка загрузки отзывов:', error);
         return [];
     }
 }
 
-// ===== СОХРАНЕНИЕ ОТЗЫВА В APPWRITE =====
 async function saveReview(name, rating, text, photoUrls = []) {
     try {
-        const url = new URL(`${APPWRITE_ENDPOINT}/databases/${APPWRITE_DATABASE_ID}/collections/${APPWRITE_COLLECTION_ID}/documents`);
-        url.searchParams.set('mode', 'admin');
-        
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'X-Appwrite-Project': APPWRITE_PROJECT_ID,
-                'X-Appwrite-Response-Format': '1.6.0',
-                'Content-Type': 'application/json',
-                'Origin': window.location.origin  // ← ДОБАВЛЯЕМ ЭТО
-            },
-            body: JSON.stringify({
-                documentId: 'unique()',
-                data: {
-                    name: name,
-                    rating: parseInt(rating),
-                    text: text,
-                    photo_urls: photoUrls
-                }
-            })
-        });
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        return await response.json();
+        return await databases.createDocument(
+            APPWRITE_DATABASE_ID,
+            APPWRITE_COLLECTION_ID,
+            ID.unique(),
+            {
+                name: name,
+                rating: parseInt(rating),
+                text: text,
+                photo_urls: photoUrls
+            }
+        );
     } catch (error) {
         console.error('Ошибка сохранения отзыва:', error);
         throw error;
     }
 }
 
-// ===== УДАЛЕНИЕ ОТЗЫВА ИЗ APPWRITE =====
 async function deleteReviewFromAppwrite(reviewId) {
     try {
         await databases.deleteDocument(
@@ -168,7 +122,6 @@ window.handlePhotoUpload = async function(input, type) {
         const uploadArea = document.getElementById(type === 'before' ? 'uploadAreaBefore' : 'uploadAreaAfter');
         const removeBtn = document.getElementById(type === 'before' ? 'removeBefore' : 'removeAfter');
 
-        // Показываем превью
         const reader = new FileReader();
         reader.onload = (e) => {
             if (previewImg) {
@@ -178,7 +131,6 @@ window.handlePhotoUpload = async function(input, type) {
         };
         reader.readAsDataURL(file);
 
-        // Сохраняем файл для последующей загрузки
         if (type === 'before') {
             photoBefore = file;
         } else {
@@ -187,14 +139,10 @@ window.handlePhotoUpload = async function(input, type) {
 
         if (uploadArea) {
             const placeholder = uploadArea.querySelector('.upload-placeholder');
-            if (placeholder) {
-                placeholder.style.display = 'none';
-            }
+            if (placeholder) placeholder.style.display = 'none';
         }
-
-        if (removeBtn) {
-            removeBtn.style.display = 'inline-flex';
-        }
+        if (removeBtn) removeBtn.style.display = 'inline-flex';
+        
     } catch (error) {
         console.error('Ошибка загрузки фото:', error);
         alert('Ошибка при загрузке фото');
@@ -207,54 +155,31 @@ window.removePhoto = function(type) {
     const input = document.getElementById(type === 'before' ? 'photoBefore' : 'photoAfter');
     const removeBtn = document.getElementById(type === 'before' ? 'removeBefore' : 'removeAfter');
 
-    if (type === 'before') {
-        photoBefore = null;
-    } else {
-        photoAfter = null;
-    }
+    if (type === 'before') photoBefore = null;
+    else photoAfter = null;
 
     if (previewImg) {
         previewImg.src = '';
         previewImg.style.display = 'none';
     }
-
     if (uploadArea) {
         const placeholder = uploadArea.querySelector('.upload-placeholder');
-        if (placeholder) {
-            placeholder.style.display = 'flex';
-        }
+        if (placeholder) placeholder.style.display = 'flex';
     }
-
-    if (removeBtn) {
-        removeBtn.style.display = 'none';
-    }
-
-    if (input) {
-        input.value = '';
-    }
+    if (removeBtn) removeBtn.style.display = 'none';
+    if (input) input.value = '';
 };
 
 async function getPhotosFromForm() {
     const photos = [];
-    
     if (photoBefore) {
-        try {
-            const url = await uploadPhoto(photoBefore);
-            photos.push(url);
-        } catch (error) {
-            console.error('Ошибка загрузки фото ДО:', error);
-        }
+        try { photos.push(await uploadPhoto(photoBefore)); } 
+        catch (error) { console.error('Ошибка загрузки фото ДО:', error); }
     }
-    
     if (photoAfter) {
-        try {
-            const url = await uploadPhoto(photoAfter);
-            photos.push(url);
-        } catch (error) {
-            console.error('Ошибка загрузки фото ПОСЛЕ:', error);
-        }
+        try { photos.push(await uploadPhoto(photoAfter)); } 
+        catch (error) { console.error('Ошибка загрузки фото ПОСЛЕ:', error); }
     }
-    
     return photos;
 }
 
@@ -314,10 +239,7 @@ async function displayReviews() {
 }
 
 window.deleteReview = async function(reviewId) {
-    console.log('🗑️ Попытка удалить отзыв:', reviewId);
-    
     if (!isAdmin()) {
-        console.log('❌ Не админ');
         alert('У вас нет прав для удаления');
         return;
     }
@@ -326,9 +248,8 @@ window.deleteReview = async function(reviewId) {
         try {
             await deleteReviewFromAppwrite(reviewId);
             await displayReviews();
-            console.log('✅ Отзыв удален');
         } catch (error) {
-            console.error('❌ Ошибка удаления:', error);
+            console.error('Ошибка удаления:', error);
             alert('Ошибка при удалении отзыва');
         }
     }
@@ -344,18 +265,10 @@ function openFullscreen(imgSrc, label) {
             <div class="modal-label">${label}</div>
         </div>
     `;
-    
     document.body.appendChild(modal);
     
-    modal.querySelector('.close-modal').addEventListener('click', () => {
-        modal.remove();
-    });
-    
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-            modal.remove();
-        }
-    });
+    modal.querySelector('.close-modal').addEventListener('click', () => modal.remove());
+    modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
     
     document.addEventListener('keydown', function escHandler(e) {
         if (e.key === 'Escape') {
@@ -365,14 +278,8 @@ function openFullscreen(imgSrc, label) {
     });
 }
 
-// ===== ИНИЦИАЛИЗАЦИЯ =====
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('✅ DOM загружен');
-    
-    if (typeof AOS !== 'undefined') {
-        AOS.init({ duration: 800, once: true });
-    }
-    
+    if (typeof AOS !== 'undefined') AOS.init({ duration: 800, once: true });
     displayReviews();
     
     if (window.location.hash === '#admin') {
@@ -395,38 +302,24 @@ document.addEventListener('DOMContentLoaded', function() {
             const photoUrls = await getPhotosFromForm();
             await saveReview(name, rating, text, photoUrls);
             
-            // Сброс формы
             this.reset();
-            
-            // Сброс фото
             photoBefore = null;
             photoAfter = null;
             
-            const previewBefore = document.getElementById('previewBefore');
-            const previewAfter = document.getElementById('previewAfter');
-            const uploadAreaBefore = document.getElementById('uploadAreaBefore');
-            const uploadAreaAfter = document.getElementById('uploadAreaAfter');
-            const removeBefore = document.getElementById('removeBefore');
-            const removeAfter = document.getElementById('removeAfter');
-            const photoBeforeInput = document.getElementById('photoBefore');
-            const photoAfterInput = document.getElementById('photoAfter');
-
-            if (previewBefore) previewBefore.style.display = 'none';
-            if (previewAfter) previewAfter.style.display = 'none';
-            
-            if (uploadAreaBefore) {
-                const ph = uploadAreaBefore.querySelector('.upload-placeholder');
-                if (ph) ph.style.display = 'flex';
-            }
-            if (uploadAreaAfter) {
-                const ph = uploadAreaAfter.querySelector('.upload-placeholder');
-                if (ph) ph.style.display = 'flex';
-            }
-            
-            if (removeBefore) removeBefore.style.display = 'none';
-            if (removeAfter) removeAfter.style.display = 'none';
-            if (photoBeforeInput) photoBeforeInput.value = '';
-            if (photoAfterInput) photoAfterInput.value = '';
+            ['Before', 'After'].forEach(suffix => {
+                const preview = document.getElementById(`preview${suffix}`);
+                const area = document.getElementById(`uploadArea${suffix}`);
+                const remove = document.getElementById(`remove${suffix}`);
+                const input = document.getElementById(`photo${suffix}`);
+                
+                if (preview) preview.style.display = 'none';
+                if (area) {
+                    const ph = area.querySelector('.upload-placeholder');
+                    if (ph) ph.style.display = 'flex';
+                }
+                if (remove) remove.style.display = 'none';
+                if (input) input.value = '';
+            });
             
             await displayReviews();
             alert('✅ Спасибо за ваш отзыв!');
