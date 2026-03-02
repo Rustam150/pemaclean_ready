@@ -11,7 +11,7 @@ const { Client, Databases, Storage, ID, Query } = Appwrite;
 const client = new Client()
     .setEndpoint(APPWRITE_ENDPOINT)
     .setProject(APPWRITE_PROJECT_ID)
-    .setMode('admin');
+   
 
 const databases = new Databases(client);
 const storage = new Storage(client);
@@ -80,12 +80,25 @@ async function uploadPhoto(file) {
 // ===== ЗАГРУЗКА ОТЗЫВОВ ИЗ APPWRITE =====
 async function loadReviews() {
     try {
-        const response = await databases.listDocuments(
-            APPWRITE_DATABASE_ID,
-            APPWRITE_COLLECTION_ID,
-            [Query.orderDesc('$createdAt')]
-        );
-        return response.documents;
+        // Создаём URL с параметром mode=admin
+        const url = new URL(`${APPWRITE_ENDPOINT}/databases/${APPWRITE_DATABASE_ID}/collections/${APPWRITE_COLLECTION_ID}/documents`);
+        url.searchParams.set('mode', 'admin');
+        
+        // Делаем запрос через fetch
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'X-Appwrite-Project': APPWRITE_PROJECT_ID,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        return data.documents;
     } catch (error) {
         console.error('Ошибка загрузки отзывов:', error);
         return [];
@@ -95,18 +108,31 @@ async function loadReviews() {
 // ===== СОХРАНЕНИЕ ОТЗЫВА В APPWRITE =====
 async function saveReview(name, rating, text, photoUrls = []) {
     try {
-        const response = await databases.createDocument(
-            APPWRITE_DATABASE_ID,
-            APPWRITE_COLLECTION_ID,
-            ID.unique(),
-            {
-                name: name,
-                rating: parseInt(rating),
-                text: text,
-                photo_urls: photoUrls
-            }
-        );
-        return response;
+        const url = new URL(`${APPWRITE_ENDPOINT}/databases/${APPWRITE_DATABASE_ID}/collections/${APPWRITE_COLLECTION_ID}/documents`);
+        url.searchParams.set('mode', 'admin');
+        
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'X-Appwrite-Project': APPWRITE_PROJECT_ID,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                documentId: 'unique()',
+                data: {
+                    name: name,
+                    rating: parseInt(rating),
+                    text: text,
+                    photo_urls: photoUrls
+                }
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        return await response.json();
     } catch (error) {
         console.error('Ошибка сохранения отзыва:', error);
         throw error;
