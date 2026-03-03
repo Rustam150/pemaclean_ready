@@ -61,22 +61,28 @@ async function uploadPhoto(file) {
         const compressedBlob = await compressImage(file, 1080, 0.8);
         const fileId = ID.unique();
         
-        // Конвертируем Blob в File для Appwrite
         const compressedFile = new File(
             [compressedBlob],
             file.name || `photo-${Date.now()}.jpg`,
             { type: compressedBlob.type || 'image/jpeg' }
         );
         
-        await storage.createFile(
+        // Загружаем файл
+        const uploadedFile = await storage.createFile(
             APPWRITE_BUCKET_ID,
             fileId,
             compressedFile
         );
         
-        return storage.getFileView(APPWRITE_BUCKET_ID, fileId).toString();
+        console.log('✅ Файл загружен, ID:', uploadedFile.$id);
+        
+        // Формируем URL вручную
+        const fileUrl = `${APPWRITE_ENDPOINT}/storage/buckets/${APPWRITE_BUCKET_ID}/files/${uploadedFile.$id}/view?project=${APPWRITE_PROJECT_ID}`;
+        
+        console.log('🔗 URL файла:', fileUrl);
+        return fileUrl;
     } catch (error) {
-        console.error('Ошибка загрузки фото:', error);
+        console.error('❌ Ошибка загрузки фото:', error);
         throw error;
     }
 }
