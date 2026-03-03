@@ -2,7 +2,7 @@ const APPWRITE_ENDPOINT = 'https://fra.cloud.appwrite.io/v1';
 const APPWRITE_PROJECT_ID = 'pemaclean-reviews';
 const APPWRITE_DATABASE_ID = '69a608a7001e7c65d92a';
 const APPWRITE_COLLECTION_ID = 'reviews';
-const APPWRITE_BUCKET_ID = 'review-photos';
+const APPWRITE_BUCKET_ID = '69a6101d003d87bc2fab';
 
 const { Client, Databases, Storage, ID, Query } = Appwrite;
 
