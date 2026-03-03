@@ -60,7 +60,20 @@ async function uploadPhoto(file) {
     try {
         const compressedBlob = await compressImage(file, 1080, 0.8);
         const fileId = ID.unique();
-        await storage.createFile(APPWRITE_BUCKET_ID, fileId, compressedBlob);
+        
+        // Конвертируем Blob в File для Appwrite
+        const compressedFile = new File(
+            [compressedBlob],
+            file.name || `photo-${Date.now()}.jpg`,
+            { type: compressedBlob.type || 'image/jpeg' }
+        );
+        
+        await storage.createFile(
+            APPWRITE_BUCKET_ID,
+            fileId,
+            compressedFile
+        );
+        
         return storage.getFileView(APPWRITE_BUCKET_ID, fileId).toString();
     } catch (error) {
         console.error('Ошибка загрузки фото:', error);
