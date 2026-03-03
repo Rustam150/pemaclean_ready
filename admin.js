@@ -1,17 +1,18 @@
 (function() {
     'use strict';
 
-    const ADMIN_PASSWORD = 'admin0987';
     const APPWRITE_ENDPOINT = 'https://fra.cloud.appwrite.io/v1';
     const APPWRITE_PROJECT_ID = 'pemaclean-reviews';
     const APPWRITE_DATABASE_ID = '69a608a7001e7c65d92a';
     const APPWRITE_COLLECTION_ID = 'reviews';
 
-    const { Client, Databases, Query } = Appwrite;
+    const { Client, Databases, Account, Query } = Appwrite;
     const client = new Client().setEndpoint(APPWRITE_ENDPOINT).setProject(APPWRITE_PROJECT_ID);
     const databases = new Databases(client);
+    const account = new Account(client);
 
     let isAuthenticated = false;
+    let currentUser = null;
 
     const DANGEROUS_PATTERNS = [
         /<script[^>]*>.*?<\/script>/gi, /javascript:/gi, /on\w+\s*=/gi,
@@ -43,35 +44,57 @@
         return cleaned;
     }
 
-    function login(password) {
-        if (password === ADMIN_PASSWORD) {
+    async function login(email, password) {
+        try {
+            await account.createEmailPasswordSession(email, password);
+            const user = await account.get();
             isAuthenticated = true;
+            currentUser = user;
             localStorage.setItem('adminAuth', 'true');
             localStorage.setItem('adminAuthTime', Date.now().toString());
             showAdminPanel();
             return true;
-        } else {
-            alert('❌ Неверный пароль');
+        } catch (error) {
+            console.error('❌ Ошибка входа:', error);
+            const errorEl = document.getElementById('loginError');
+            if (errorEl) {
+                errorEl.textContent = '❌ Неверный email или пароль';
+            }
             return false;
         }
     }
 
-    window.logout = function() {
+    async function logout() {
+        try {
+            await account.deleteSession('current');
+        } catch (e) {
+            console.error('Ошибка выхода:', e);
+        }
         isAuthenticated = false;
+        currentUser = null;
         localStorage.removeItem('adminAuth');
         localStorage.removeItem('adminAuthTime');
         location.reload();
-    };
+    }
 
-    function checkAuth() {
+    async function checkAuth() {
         const auth = localStorage.getItem('adminAuth');
         const authTime = localStorage.getItem('adminAuthTime');
+        
         if (auth && authTime) {
             const elapsed = Date.now() - parseInt(authTime);
             if (elapsed < 24 * 60 * 60 * 1000) {
-                isAuthenticated = true;
-                showAdminPanel();
-                return true;
+                try {
+                    const user = await account.get();
+                    isAuthenticated = true;
+                    currentUser = user;
+                    showAdminPanel();
+                    return true;
+                } catch (e) {
+                    console.log('Сессия истекла:', e);
+                    localStorage.removeItem('adminAuth');
+                    localStorage.removeItem('adminAuthTime');
+                }
             }
         }
         return false;
@@ -229,14 +252,21 @@
         alert('Settings saved');
     };
 
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', async function() {
         console.log('✅ Admin panel loaded');
-        if (checkAuth()) showAdminPanel();
-        else showLoginForm();
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
+        
+        const authChecked = await checkAuth();
+        if (authChecked) {
+            showAdminPanel();
+        } else {
+            showLoginForm();
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
+            const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
-            login(password);
+            await login(email, password);
         });
     });
 

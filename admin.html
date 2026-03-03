@@ -57,6 +57,7 @@
         .stat-card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px; text-align: center; }
         .stat-card h3 { margin: 0 0 10px 0; font-size: 14px; opacity: 0.9; }
         .stat-card .stat-value { font-size: 32px; font-weight: 700; }
+        .login-error { color: #ff4444; text-align: center; margin-top: 10px; font-size: 14px; }
         @media (max-width: 768px) {
             .admin-header { flex-direction: column; gap: 15px; align-items: flex-start; }
             .admin-tabs { flex-wrap: wrap; }
@@ -71,10 +72,15 @@
             <h1>🔐 Админ-панель</h1>
             <form id="loginForm">
                 <div class="form-group">
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" placeholder="admin@pemacleaning.ru" required>
+                </div>
+                <div class="form-group">
                     <label for="password">Пароль:</label>
                     <input type="password" id="password" placeholder="Введите пароль" required>
                 </div>
                 <button type="submit">Войти</button>
+                <div id="loginError" class="login-error"></div>
             </form>
         </div>
     </div>
