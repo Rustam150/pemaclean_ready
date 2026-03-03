@@ -13,6 +13,11 @@ const client = new Client()
 const databases = new Databases(client);
 const storage = new Storage(client);
 
+const REVIEWS_PER_PAGE = 10;
+let loadedCount = 0;
+let hasMore = true;
+let isLoading = false;
+
 function compressImage(file, maxWidth = 800, quality = 0.7) {
     return new Promise((resolve) => {
         const reader = new FileReader();
@@ -63,13 +68,21 @@ async function uploadPhoto(file) {
     }
 }
 
-async function loadReviews() {
+async function loadReviews(limit = REVIEWS_PER_PAGE, offset = 0) {
     try {
+        const queries = [
+            Query.orderDesc('$createdAt'),
+            Query.limit(limit),
+            Query.offset(offset)
+        ];
+        
         const response = await databases.listDocuments(
             APPWRITE_DATABASE_ID,
             APPWRITE_COLLECTION_ID,
-            [Query.orderDesc('$createdAt'), Query.limit(50)]
+            queries
         );
+        
+        hasMore = response.total > (offset + limit);
         return response.documents;
     } catch (error) {
         console.error('Ошибка загрузки отзывов:', error);
@@ -108,6 +121,105 @@ async function deleteReviewFromAppwrite(reviewId) {
         console.error('Ошибка удаления отзыва:', error);
         throw error;
     }
+}
+
+function renderReview(review, admin) {
+    const hasPhotos = review.photo_urls && review.photo_urls.length > 0;
+    const photosHtml = hasPhotos ? (review.photo_urls.length === 1 ? 
+        `<div class="review-photos"><div class="review-photo-item review-photo-single" onclick="openFullscreen('${review.photo_urls[0]}', 'Фото')">
+            <img src="${review.photo_urls[0]}" alt="photo">
+            <span class="review-photo-label">Фото</span>
+        </div></div>` : 
+        `<div class="review-photos">
+            <div class="review-photo-item" onclick="openFullscreen('${review.photo_urls[0]}', 'До')">
+                <img src="${review.photo_urls[0]}" alt="до">
+                <span class="review-photo-label">До</span>
+            </div>
+            <div class="review-photo-item" onclick="openFullscreen('${review.photo_urls[1]}', 'После')">
+                <img src="${review.photo_urls[1]}" alt="после">
+                <span class="review-photo-label">После</span>
+            </div>
+        </div>`) : '';
+    
+    const starsDisplay = '★'.repeat(review.rating) + '☆'.repeat(5-review.rating);
+    const date = new Date(review.$createdAt).toLocaleDateString('ru-RU');
+    
+    return `
+        <div class="review-card" data-aos="fade-up">
+            <div class="review-header">
+                <div class="review-avatar">${getInitials(review.name)}</div>
+                <div>
+                    <h4>${review.name}</h4>
+                    <div class="review-stars">${starsDisplay}</div>
+                </div>
+            </div>
+            <p class="review-text">"${review.text}"</p>
+            ${photosHtml}
+            <div class="review-footer">
+                <span class="review-date">${date}</span>
+                ${admin ? `<button class="delete-review-btn" onclick="deleteReview('${review.$id}')"><i class="fas fa-trash"></i> Удалить</button>` : ''}
+            </div>
+        </div>
+    `;
+}
+
+async function displayReviews(append = false) {
+    const container = document.getElementById('reviewsContainer');
+    const loadMoreBtn = document.getElementById('loadMoreBtn');
+    const statusEl = document.getElementById('loadMoreStatus');
+    
+    if (!container) return;
+    
+    if (!append) {
+        container.innerHTML = '<div class="loading">Загрузка отзывов...</div>';
+        loadedCount = 0;
+    }
+    
+    if (isLoading) return;
+    isLoading = true;
+    
+    if (loadMoreBtn) {
+        loadMoreBtn.disabled = true;
+        loadMoreBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Загрузка...';
+    }
+    
+    const admin = isAdmin();
+    const reviews = await loadReviews(REVIEWS_PER_PAGE, loadedCount);
+    
+    if (reviews.length === 0 && !append) {
+        container.innerHTML = '<div class="no-reviews">Пока нет отзывов. Будьте первым!</div>';
+        if (loadMoreBtn) loadMoreBtn.style.display = 'none';
+        isLoading = false;
+        return;
+    }
+    
+    if (!append) {
+        container.innerHTML = '';
+    }
+    
+    reviews.forEach(review => {
+        container.insertAdjacentHTML('beforeend', renderReview(review, admin));
+    });
+    
+    loadedCount += reviews.length;
+    
+    if (loadMoreBtn) {
+        if (hasMore) {
+            loadMoreBtn.style.display = 'inline-flex';
+            loadMoreBtn.disabled = false;
+            loadMoreBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Загрузить ещё';
+            if (statusEl) statusEl.textContent = `Показано ${loadedCount} из ${reviews.length > 0 ? 'многих' : loadedCount} отзывов`;
+        } else {
+            loadMoreBtn.style.display = 'none';
+            if (statusEl) statusEl.textContent = `Все отзывы загружены (${loadedCount})`;
+        }
+    }
+    
+    if (typeof AOS !== 'undefined') {
+        AOS.refresh();
+    }
+    
+    isLoading = false;
 }
 
 window.handlePhotoUpload = async function(input, type) {
@@ -183,61 +295,6 @@ async function getPhotosFromForm() {
     return photos;
 }
 
-async function displayReviews() {
-    const container = document.getElementById('reviewsContainer');
-    if (!container) return;
-    
-    container.innerHTML = '<div class="loading">Загрузка отзывов...</div>';
-    
-    const reviews = await loadReviews();
-    const admin = isAdmin();
-    
-    if (reviews.length === 0) {
-        container.innerHTML = '<div class="no-reviews">Пока нет отзывов. Будьте первым!</div>';
-        return;
-    }
-    
-    container.innerHTML = reviews.map(review => {
-        const hasPhotos = review.photo_urls && review.photo_urls.length > 0;
-        const photosHtml = hasPhotos ? (review.photo_urls.length === 1 ? 
-            `<div class="review-photos"><div class="review-photo-item review-photo-single" onclick="openFullscreen('${review.photo_urls[0]}', 'Фото')">
-                <img src="${review.photo_urls[0]}" alt="photo">
-                <span class="review-photo-label">Фото</span>
-            </div></div>` : 
-            `<div class="review-photos">
-                <div class="review-photo-item" onclick="openFullscreen('${review.photo_urls[0]}', 'До')">
-                    <img src="${review.photo_urls[0]}" alt="до">
-                    <span class="review-photo-label">До</span>
-                </div>
-                <div class="review-photo-item" onclick="openFullscreen('${review.photo_urls[1]}', 'После')">
-                    <img src="${review.photo_urls[1]}" alt="после">
-                    <span class="review-photo-label">После</span>
-                </div>
-            </div>`) : '';
-        
-        const starsDisplay = '★'.repeat(review.rating) + '☆'.repeat(5-review.rating);
-        const date = new Date(review.$createdAt).toLocaleDateString('ru-RU');
-        
-        return `
-            <div class="review-card" data-aos="fade-up">
-                <div class="review-header">
-                    <div class="review-avatar">${getInitials(review.name)}</div>
-                    <div>
-                        <h4>${review.name}</h4>
-                        <div class="review-stars">${starsDisplay}</div>
-                    </div>
-                </div>
-                <p class="review-text">"${review.text}"</p>
-                ${photosHtml}
-                <div class="review-footer">
-                    <span class="review-date">${date}</span>
-                    ${admin ? `<button class="delete-review-btn" onclick="deleteReview('${review.$id}')"><i class="fas fa-trash"></i> Удалить</button>` : ''}
-                </div>
-            </div>
-        `;
-    }).join('');
-}
-
 window.deleteReview = async function(reviewId) {
     if (!isAdmin()) {
         alert('У вас нет прав для удаления');
@@ -247,7 +304,9 @@ window.deleteReview = async function(reviewId) {
     if (confirm('Удалить этот отзыв?')) {
         try {
             await deleteReviewFromAppwrite(reviewId);
-            await displayReviews();
+            loadedCount = 0;
+            hasMore = true;
+            await displayReviews(false);
         } catch (error) {
             console.error('Ошибка удаления:', error);
             alert('Ошибка при удалении отзыва');
@@ -280,7 +339,15 @@ function openFullscreen(imgSrc, label) {
 
 document.addEventListener('DOMContentLoaded', function() {
     if (typeof AOS !== 'undefined') AOS.init({ duration: 800, once: true });
-    displayReviews();
+    
+    const loadMoreBtn = document.getElementById('loadMoreBtn');
+    if (loadMoreBtn) {
+        loadMoreBtn.addEventListener('click', () => {
+            displayReviews(true);
+        });
+    }
+    
+    displayReviews(false);
     
     if (window.location.hash === '#admin') {
         setTimeout(() => alert('Режим администратора: кнопки удаления активны'), 500);
@@ -321,7 +388,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (input) input.value = '';
             });
             
-            await displayReviews();
+            loadedCount = 0;
+            hasMore = true;
+            await displayReviews(false);
             alert('✅ Спасибо за ваш отзыв!');
             
         } catch (error) {

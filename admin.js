@@ -1,28 +1,22 @@
-// ===== ADMIN PANEL MODULE (IIFE) =====
 (function() {
     'use strict';
 
-    // ===== КОНФИГУРАЦИЯ =====
     const ADMIN_PASSWORD = 'admin0987';
-    const SUPABASE_URL = '/supabase-api';
-    const SUPABASE_ANON_KEY = 'sb_publishable_sdkcgSWRjvbO8zPB22h5mQ_h9xqGwry';
+    const APPWRITE_ENDPOINT = 'https://fra.cloud.appwrite.io/v1';
+    const APPWRITE_PROJECT_ID = 'pemaclean-reviews';
+    const APPWRITE_DATABASE_ID = '69a608a7001e7c65d92a';
+    const APPWRITE_COLLECTION_ID = 'reviews';
 
-    let supabaseClient = null;
+    const { Client, Databases, Query } = Appwrite;
+    const client = new Client().setEndpoint(APPWRITE_ENDPOINT).setProject(APPWRITE_PROJECT_ID);
+    const databases = new Databases(client);
+
     let isAuthenticated = false;
 
-    // ===== ФУНКЦИИ ЗАЩИТЫ =====
-    
     const DANGEROUS_PATTERNS = [
-        /<script[^>]*>.*?<\/script>/gi,
-        /javascript:/gi,
-        /on\w+\s*=/gi,
-        /<iframe/gi,
-        /<object/gi,
-        /<embed/gi,
-        /eval\(/gi,
-        /expression\(/gi,
-        /vbscript:/gi,
-        /data:text\/html/gi
+        /<script[^>]*>.*?<\/script>/gi, /javascript:/gi, /on\w+\s*=/gi,
+        /<iframe/gi, /<object/gi, /<embed/gi, /eval\(/gi, /expression\(/gi,
+        /vbscript:/gi, /data:text\/html/gi
     ];
 
     function containsDangerousCode(input) {
@@ -39,32 +33,16 @@
 
     function validateAndCleanInput(input, maxLength = 500) {
         if (typeof input !== 'string') return '';
-        
         if (containsDangerousCode(input)) {
             alert('⚠️ Ислам сац везар хьо');
             console.warn('🚨 Попытка инъекции:', input);
             return null;
         }
-        
         let cleaned = sanitizeInput(input);
         cleaned = cleaned.substring(0, maxLength).trim();
         return cleaned;
     }
 
-    // ===== ИНИЦИАЛИЗАЦИЯ SUPABASE =====
-    function initSupabase() {
-        if (supabaseClient) return supabaseClient;
-        
-        if (window.supabase) {
-            supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-            console.log('✅ Supabase инициализирован (admin.js)');
-        } else {
-            console.error('❌ Supabase SDK не загружен');
-        }
-        return supabaseClient;
-    }
-
-    // ===== АВТОРИЗАЦИЯ =====
     function login(password) {
         if (password === ADMIN_PASSWORD) {
             isAuthenticated = true;
@@ -88,8 +66,6 @@
     function checkAuth() {
         const auth = localStorage.getItem('adminAuth');
         const authTime = localStorage.getItem('adminAuthTime');
-        
-        // Сессия действительна 24 часа
         if (auth && authTime) {
             const elapsed = Date.now() - parseInt(authTime);
             if (elapsed < 24 * 60 * 60 * 1000) {
@@ -114,25 +90,18 @@
         document.getElementById('adminPanel').style.display = 'none';
     }
 
-    // ===== УПРАВЛЕНИЕ ОТЗЫВАМИ =====
     async function loadReviews() {
-        const sb = initSupabase();
-        if (!sb) return;
-
         const reviewsList = document.getElementById('reviewsList');
         reviewsList.innerHTML = '<div class="loading">Загрузка отзывов...</div>';
 
         try {
-            const { data, error } = await sb
-                .from('reviews')
-                .select('*')
-                .order('created_at', { ascending: false });
+            const response = await databases.listDocuments(
+                APPWRITE_DATABASE_ID,
+                APPWRITE_COLLECTION_ID,
+                [Query.orderDesc('$createdAt')]
+            );
 
-            if (error) {
-                console.error('❌ Ошибка загрузки отзывов:', error);
-                reviewsList.innerHTML = '<div class="no-reviews">Ошибка при загрузке отзывов</div>';
-                return;
-            }
+            const data = response.documents;
 
             if (!data || data.length === 0) {
                 reviewsList.innerHTML = '<div class="no-reviews">Отзывов не найдено</div>';
@@ -142,7 +111,7 @@
             reviewsList.innerHTML = data.map(review => {
                 const photoUrls = review.photo_urls || [];
                 const starsDisplay = '★'.repeat(review.rating) + '☆'.repeat(5 - review.rating);
-                const date = new Date(review.created_at).toLocaleDateString('ru-RU');
+                const date = new Date(review.$createdAt).toLocaleDateString('ru-RU');
 
                 let photosHtml = '';
                 if (photoUrls.length > 0) {
@@ -167,7 +136,7 @@
                             <span class="review-item-date">${date}</span>
                         </div>
                         <div class="review-item-actions">
-                            <button class="delete-btn" onclick="deleteReview('${review.id}')">
+                            <button class="delete-btn" onclick="deleteReview('${review.$id}')">
                                 <i class="fas fa-trash"></i> Удалить
                             </button>
                         </div>
@@ -183,44 +152,30 @@
     window.deleteReview = async function(reviewId) {
         if (!confirm('Вы уверены, что хотите удалить этот отзыв?')) return;
 
-        const sb = initSupabase();
-        if (!sb) return;
-
         try {
-            const { error } = await sb
-                .from('reviews')
-                .delete()
-                .eq('id', reviewId);
-
-            if (error) {
-                console.error('❌ Ошибка удаления:', error);
-                alert('Ошибка при удалении отзыва');
-            } else {
-                console.log('✅ Отзыв удален');
-                alert('Отзыв успешно удален');
-                loadReviews();
-                loadStats();
-            }
+            await databases.deleteDocument(
+                APPWRITE_DATABASE_ID,
+                APPWRITE_COLLECTION_ID,
+                reviewId
+            );
+            console.log('✅ Отзыв удален');
+            alert('Отзыв успешно удален');
+            loadReviews();
+            loadStats();
         } catch (err) {
-            console.error('❌ Ошибка:', err);
-            alert('Произошла ошибка при удалении');
+            console.error('❌ Ошибка удаления:', err);
+            alert('Ошибка при удалении отзыва');
         }
     };
 
-    // ===== СТАТИСТИКА =====
     async function loadStats() {
-        const sb = initSupabase();
-        if (!sb) return;
-
         try {
-            const { data, error } = await sb
-                .from('reviews')
-                .select('*');
-
-            if (error || !data) {
-                console.error('❌ Ошибка загрузки статистики:', error);
-                return;
-            }
+            const response = await databases.listDocuments(
+                APPWRITE_DATABASE_ID,
+                APPWRITE_COLLECTION_ID,
+                []
+            );
+            const data = response.documents;
 
             const totalReviews = data.length;
             const avgRating = totalReviews > 0 
@@ -232,40 +187,21 @@
             document.getElementById('avgRating').textContent = avgRating;
             document.getElementById('reviewsWithPhotos').textContent = reviewsWithPhotos;
         } catch (err) {
-            console.error('❌ Ошибка:', err);
+            console.error('❌ Ошибка статистики:', err);
         }
     }
 
-    // ===== УПРАВЛЕНИЕ ВКЛАДКАМИ =====
     window.switchTab = function(tabName) {
-        // Скрываем все вкладки
-        document.querySelectorAll('.tab-content').forEach(tab => {
-            tab.classList.remove('active');
-        });
-
-        // Убираем активный класс со всех кнопок
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.classList.remove('active');
-        });
-
-        // Показываем нужную вкладку
+        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
         document.getElementById(tabName + 'Tab').classList.add('active');
-
-        // Добавляем активный класс нужной кнопке
         event.target.classList.add('active');
-
-        // Загружаем данные для вкладки
-        if (tabName === 'stats') {
-            loadStats();
-        } else if (tabName === 'reviews') {
-            loadReviews();
-        }
+        if (tabName === 'stats') loadStats();
+        else if (tabName === 'reviews') loadReviews();
     };
 
-    // ===== НАСТРОЙКИ =====
     function loadSettings() {
         const settings = JSON.parse(localStorage.getItem('siteSettings') || '{}');
-        
         document.getElementById('siteTitle').value = settings.title || 'PemaCleaning';
         document.getElementById('siteDescription').value = settings.description || 'Премиальный клининг в Ростове-на-Дону';
         document.getElementById('sitePhone').value = settings.phone || '';
@@ -288,32 +224,15 @@
             return;
         }
 
-        const settings = {
-            title: title,
-            description: description,
-            phone: phone,
-            email: email
-        };
-
+        const settings = { title, description, phone, email };
         localStorage.setItem('siteSettings', JSON.stringify(settings));
         alert('Settings saved');
     };
 
-    // ===== ИНИЦИАЛИЗАЦИЯ =====
     document.addEventListener('DOMContentLoaded', function() {
         console.log('✅ Admin panel loaded');
-
-        // Инициализируем Supabase
-        initSupabase();
-
-        // Проверяем авторизацию
-        if (checkAuth()) {
-            showAdminPanel();
-        } else {
-            showLoginForm();
-        }
-
-        // Обработчик формы входа
+        if (checkAuth()) showAdminPanel();
+        else showLoginForm();
         document.getElementById('loginForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const password = document.getElementById('password').value;
@@ -321,4 +240,4 @@
         });
     });
 
-})(); // Конец IIFE
+})();
