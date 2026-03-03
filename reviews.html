@@ -12,6 +12,7 @@
 <link rel="stylesheet" href="style.css">
 <script src="https://cdn.jsdelivr.net/npm/appwrite@14.0.0"></script>
 <style>
+
 .btn-load-more {
     background: #4361ee;
     color: white;
@@ -35,6 +36,33 @@
     background: #ccc;
     cursor: not-allowed;
     transform: none;
+}
+.load-more-status {
+    text-align: center;
+    margin-top: 10px;
+    color: #666;
+    font-size: 13px;
+}
+.btn-load-more {
+    background: #4361ee;
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 20px auto;
+}
+.btn-load-more:hover {
+    background: #3a56d4;
+}
+.btn-load-more:disabled {
+    background: #ccc;
+    cursor: not-allowed;
 }
 .load-more-status {
     text-align: center;

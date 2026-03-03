@@ -1414,3 +1414,31 @@ body {
         display: none;
     }
 }
+.btn-load-more {
+    background: #4361ee;
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+.btn-load-more:hover {
+    background: #3a56d4;
+    transform: translateY(-2px);
+}
+.btn-load-more:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    transform: none;
+}
+.load-more-status {
+    margin-top: 10px;
+    color: #666;
+    font-size: 13px;
+}
