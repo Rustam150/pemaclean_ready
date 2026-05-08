@@ -17,6 +17,10 @@
     {
       "src": "images/**",
       "use": "@vercel/static"
+    },
+    {
+      "src": "*.{png,ico,webmanifest,svg}",
+      "use": "@vercel/static"
     }
   ],
   "rewrites": [
@@ -25,5 +29,4 @@
       "destination": "https://gxdaszzavrbrlwoqzyoe.supabase.co/:path*"
     }
   ]
-  
 }
